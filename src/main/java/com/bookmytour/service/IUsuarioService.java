@@ -7,5 +7,6 @@ public interface IUsuarioService {
     Usuario getUsuarioById(int id);
     Usuario saveUsuario(Usuario usuario);
     void deleteUsuario(int id);
+    Usuario findByEmail(String email);
 
 }

@@ -8,7 +8,7 @@ import java.util.List;
 
 
 @Service
-public class UsarioService implements IUsuarioService {
+public class UsuarioService implements IUsuarioService {
 
     @Autowired
     private IUsuarioRepository usuarioRepository;
@@ -31,6 +31,11 @@ public class UsarioService implements IUsuarioService {
     @Override
     public void deleteUsuario(int id) {
         usuarioRepository.deleteById(id);
+    }
+
+    @Override
+    public Usuario findByEmail(String email) {
+        return usuarioRepository.findByEmail(email).orElse(null);
     }
 
 }

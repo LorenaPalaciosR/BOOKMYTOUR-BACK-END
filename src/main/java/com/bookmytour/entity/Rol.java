@@ -17,7 +17,7 @@ public class Rol {
     private Integer rolId;
 
     @Column(name = "role_name", unique = true, nullable = false)
-    private String roleName;
+    private String rolName;
 
     @OneToMany(mappedBy = "rol")
     private Set<Usuario> usuarios = new HashSet<>();
