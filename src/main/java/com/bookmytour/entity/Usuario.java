@@ -12,14 +12,18 @@ public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer usuarioId;
 
-    private Integer id;
-    private String first_name;
-    private String last_name;
+    @Column(length = 100)
+    private String firstName;
+    @Column(length = 100)
+    private String lastName;
+    @Column(length = 100)
     private String email;
+    @Column(length = 100)
     private String password;
-    private Integer role_id;
-    private String image_profile;
+    @Column(length = 100)
+    private String imageProfile;
 
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
