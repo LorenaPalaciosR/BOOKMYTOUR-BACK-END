@@ -21,6 +21,9 @@ public class UsuarioService implements IUsuarioService {
     @Autowired
     private RolService rolService; // Servicio para gestionar roles
 
+    // URL de imagen de perfil predeterminada
+    private static final String DEFAULT_PROFILE_IMAGE_URL = "https://imagesbucketsback.s3.us-east-1.amazonaws.com/usuariosinfoto.jpg";
+
     @PostConstruct
     public void initializeAdminUser() {
         if (usuarioRepository.count() == 0) {
@@ -31,6 +34,7 @@ public class UsuarioService implements IUsuarioService {
             adminUser.setEmail("lorerios073@gmail.com");
             adminUser.setPassword("securePassword123"); // Cambia la contraseña en producción
             adminUser.setRol(adminRol);
+            adminUser.setImageProfile(DEFAULT_PROFILE_IMAGE_URL);
             usuarioRepository.save(adminUser);
         }
     }
@@ -46,12 +50,16 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public Usuario saveUsuario(Usuario usuario) {
+        if (usuario.getImageProfile() == null || usuario.getImageProfile().isEmpty()) {
+            usuario.setImageProfile(DEFAULT_PROFILE_IMAGE_URL);
+        }
         return usuarioRepository.save(usuario);
     }
 
     @Override
     public void deleteUsuario(int id) {
         usuarioRepository.deleteById(id);
+
     }
 
     @Override
