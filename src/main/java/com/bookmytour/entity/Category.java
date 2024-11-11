@@ -10,6 +10,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+
+@Table(name="categories")
+
 public class Category {
 
     @Id
@@ -19,7 +22,15 @@ public class Category {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 255) // Almacena la URL de la imagen representativa
+    private String imageUrl;
+
     @OneToMany(mappedBy = "category")
     private List<Tour> tours;
+
+
 
 }

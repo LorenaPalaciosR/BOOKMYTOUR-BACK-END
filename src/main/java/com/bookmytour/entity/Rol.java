@@ -9,18 +9,24 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="roles")
+
+@Table(name="rol")
 public class Rol {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer rolId;
+    private Integer roleId;
 
     @Column(name = "role_name", unique = true, nullable = false)
     private String rolName;
 
     @OneToMany(mappedBy = "rol")
     private Set<Usuario> usuarios = new HashSet<>();
+
+
+    public Rol(String rolName) {
+        this.rolName = rolName;
+    }
 
     }
 

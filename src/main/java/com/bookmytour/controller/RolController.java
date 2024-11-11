@@ -30,7 +30,7 @@ public class RolController {
 
     @PutMapping("/{id}")
     public Rol updateRol(@PathVariable int id, @RequestBody Rol rol) {
-        rol.setRolId(id);
+        rol.setRoleId(id);
         return rolService.saveRol(rol);
     }
 

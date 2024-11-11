@@ -26,6 +26,7 @@ public class JwtRequestFilter extends OncePerRequestFilter  {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+
         System.out.println("JwtRequestFilter está siendo aplicado para: " + request.getRequestURI());
 
         final String authorizationHeader = request.getHeader("Authorization");
@@ -33,21 +34,34 @@ public class JwtRequestFilter extends OncePerRequestFilter  {
         String username = null;
         String jwt = null;
 
+        // Obtener el token JWT del encabezado
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
+            jwt = authorizationHeader.substring(7);  // Extrae el token después de "Bearer "
+            System.out.println("Token JWT recibido: " + jwt);
+
+            try {
+                username = jwtUtil.extractUsername(jwt);  // Extrae el nombre de usuario del token
+                System.out.println("Usuario extraído del token: " + username);
+            } catch (Exception e) {
+                System.out.println("Error al extraer el nombre de usuario del token JWT: " + e.getMessage());
+            }
         }
 
+        // Validación del token y autenticación
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            if (jwtUtil.isTokenValid(jwt, userDetails.getUsername())) {
+            if (jwtUtil.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                System.out.println("Usuario autenticado exitosamente: " + username);
+            } else {
+                System.out.println("Token JWT no válido para el usuario: " + username);
             }
         }
+
         chain.doFilter(request, response);
     }
 

@@ -1,6 +1,9 @@
 package com.bookmytour.controller;
 
+import com.bookmytour.entity.City;
+import com.bookmytour.entity.Tour;
 import com.bookmytour.entity.TourCities;
+import com.bookmytour.entity.TourCitiesId;
 import com.bookmytour.service.ITourCitiesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +23,9 @@ public class TourCitiesController {
         return tourCitiesService.getAllTourCities();
     }
 
-    @GetMapping("/{id}")
-    public TourCities getTourCityById(@PathVariable int id) {
+    @GetMapping("/{tourId}/{cityId}")
+    public TourCities getTourCityById(@PathVariable int tourId, @PathVariable int cityId) {
+        TourCitiesId id = new TourCitiesId(tourId, cityId);
         return tourCitiesService.getTourCityById(id);
     }
 
@@ -30,14 +34,17 @@ public class TourCitiesController {
         return tourCitiesService.saveTourCity(tourCity);
     }
 
-    @PutMapping("/{id}")
-    public TourCities updateTourCity(@PathVariable int id, @RequestBody TourCities tourCity) {
-        tourCity.setId(id);
+    @PutMapping("/{tourId}/{cityId}")
+    public TourCities updateTourCity(@PathVariable int tourId, @PathVariable int cityId, @RequestBody TourCities tourCity) {
+        tourCity.setTour(new Tour(tourId)); // Configurar tour con tourId
+        tourCity.setCity(new City(cityId)); // Configurar city con cityId
         return tourCitiesService.saveTourCity(tourCity);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteTourCity(@PathVariable int id) {
+    @DeleteMapping("/{tourId}/{cityId}")
+    public void deleteTourCity(@PathVariable int tourId, @PathVariable int cityId) {
+        TourCitiesId id = new TourCitiesId(tourId, cityId);
         tourCitiesService.deleteTourCity(id);
     }
+
 }

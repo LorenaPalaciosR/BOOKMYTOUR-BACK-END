@@ -1,6 +1,7 @@
 package com.bookmytour.service.impl;
 
 import com.bookmytour.entity.TourCities;
+import com.bookmytour.entity.TourCitiesId;
 import com.bookmytour.repository.ITourCitiesRepository;
 import com.bookmytour.service.ITourCitiesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class TourCitiesService implements ITourCitiesService {
     }
 
     @Override
-    public TourCities getTourCityById(int id) {
+    public TourCities getTourCityById(TourCitiesId id) {
         return tourCitiesRepository.findById(id).orElse(null);
     }
 
@@ -31,7 +32,7 @@ public class TourCitiesService implements ITourCitiesService {
     }
 
     @Override
-    public void deleteTourCity(int id) {
+    public void deleteTourCity(TourCitiesId id) {
         tourCitiesRepository.deleteById(id);
     }
 }

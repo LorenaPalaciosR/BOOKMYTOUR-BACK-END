@@ -13,6 +13,10 @@ public class RolService implements IRolService {
     @Autowired
     private IRolRepository rolRepository;
 
+    public Rol getOrCreateRol(String rolName) {
+        return rolRepository.findByRolName(rolName)
+                .orElseGet(() -> rolRepository.save(new Rol(rolName)));
+    }
     @Override
     public List<Rol> getAllRoles(){
         return rolRepository.findAll();

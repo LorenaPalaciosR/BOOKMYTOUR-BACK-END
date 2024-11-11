@@ -3,6 +3,8 @@ package com.bookmytour.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -10,7 +12,8 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private String SECRET_KEY = "my_secret_key";  // Cambia esto a una clave secreta segura
+    @Value("${jwt.secret.key}")
+    private String SECRET_KEY;
 
     public String generateToken(String username) {
         return Jwts.builder()
@@ -29,9 +32,9 @@ public class JwtUtil {
         return extractClaims(token).getExpiration();
     }
 
-    public Boolean isTokenValid(String token, String username) {
+    public Boolean isTokenValid(String token, UserDetails userDetails) {
         String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
+        return (extractedUsername.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());

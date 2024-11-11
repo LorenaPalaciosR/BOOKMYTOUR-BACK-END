@@ -11,6 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 
+@Table(name="booking")
 public class Booking {
 
     @Id
@@ -19,7 +20,7 @@ public class Booking {
 
     @ManyToOne
     @JoinColumn(name="user_id", nullable = false)
-    private User user;
+    private Usuario user;
 
     @ManyToOne
     @JoinColumn(name="tour_id", nullable = false)

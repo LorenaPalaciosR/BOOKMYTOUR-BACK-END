@@ -20,26 +20,36 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 
 public class SecurityConfig {
-    @Autowired
-    private JwtRequestFilter jwtRequestFilter;
+    private final JwtRequestFilter jwtRequestFilter;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    public SecurityConfig(JwtRequestFilter jwtRequestFilter, UserDetailsServiceImpl userDetailsService) {
+        this.jwtRequestFilter = jwtRequestFilter;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/public/**").permitAll() // Rutas públicas
-                        .anyRequest().authenticated() // Resto de las rutas requieren autenticación
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // JWT no requiere sesión
+                .authorizeHttpRequests()
 
-        // Agregar el filtro JWT antes de UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                // Permitir acceso sin autenticación a rutas públicas
+                .requestMatchers("/api/auth/**", "/api/public/**", "/api/check-database").permitAll()
+
+                // Rutas protegidas que requieren autenticación
+                .requestMatchers("/api/roles/**", "/api/users/**", "/api/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+
+                .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        // Añadir el filtro JWT si estás usando autenticación JWT
+        http.addFilterBefore(new JwtRequestFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -50,18 +60,12 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-    }
-
-    // Configuración de CORS
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("http://localhost:5173","http://localhost:3000", "https://bookmytour-front-end.vercel.app/").allowedHeaders("*").allowedMethods("*");
+                registry.addMapping("/**").allowedOrigins("*").allowedMethods("*").allowedHeaders("*");
             }
         };
     }

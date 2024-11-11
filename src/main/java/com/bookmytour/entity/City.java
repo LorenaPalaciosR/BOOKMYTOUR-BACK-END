@@ -9,6 +9,8 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 
+@Table(name="cities")
+
 public class City {
 
     @Id
@@ -20,6 +22,10 @@ public class City {
 
     @OneToMany(mappedBy = "city")
     private List<TourCities> tourCities;
+
+    public City(Integer cityId) {
+        this.cityId = cityId;
+    }
 
 
 }

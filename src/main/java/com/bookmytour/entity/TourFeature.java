@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-
+@Table(name="tour_features")
 public class TourFeature {
 
     @Id

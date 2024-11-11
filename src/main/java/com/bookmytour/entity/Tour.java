@@ -8,6 +8,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name="tours")
 public class Tour {
 
     @Id
@@ -49,6 +50,9 @@ public class Tour {
     @OneToMany(mappedBy = "tour")
     private List<TourCities> tourCities;
 
+    public Tour(Integer tourId) {
+        this.tourId = tourId;
+    }
 
 
 }
