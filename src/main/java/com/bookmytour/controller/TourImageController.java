@@ -48,22 +48,31 @@ public class TourImageController {
             throw new RuntimeException("Tour no encontrado");
         }
 
-        // Cargar el archivo a S3 y obtener la URL
         String fileName = file.getOriginalFilename();
-        Path tempPath = Files.createTempFile("temp", fileName);
-        file.transferTo(tempPath.toFile());
+        Path tempPath = null;
+        try {
+            // Crear archivo temporal y transferir el contenido del archivo
+            tempPath = Files.createTempFile("temp", fileName);
+            file.transferTo(tempPath.toFile());
 
-        String imageUrl = s3Service.uploadFile(fileName, tempPath);
-        Files.delete(tempPath);  // Eliminar el archivo temporal después de cargar
+            // Subir el archivo al bucket de S3 y obtener la URL
+            String imageUrl = s3Service.uploadFile(fileName, tempPath);
 
-        // Crear un objeto TourImage y guardar la URL de la imagen
-        TourImage tourImage = new TourImage();
-        tourImage.setTour(tour);
-        tourImage.setImageUrl(imageUrl);
+            // Crear objeto TourImage y guardar la URL
+            TourImage tourImage = new TourImage();
+            tourImage.setTour(tour);
+            tourImage.setImageUrl(imageUrl);
 
-        return tourImageService.saveTourImage(tourImage);
+            return tourImageService.saveTourImage(tourImage);
+
+        } finally {
+            // Asegurar que el archivo temporal sea eliminado, incluso en caso de error
+            if (tempPath != null) {
+                Files.deleteIfExists(tempPath);
+            }
+        }
     }
-    // Actualizar la URL de una imagen específica (solo administrador)
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public TourImage updateTourImage(@PathVariable int id, @RequestBody TourImage tourImage) {
@@ -71,7 +80,6 @@ public class TourImageController {
         return tourImageService.saveTourImage(tourImage);
     }
 
-    // Eliminar una imagen específica (solo administrador)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteTourImage(@PathVariable int id) {

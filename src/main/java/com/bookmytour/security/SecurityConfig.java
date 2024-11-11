@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
 
                 // Permitir acceso sin autenticación a rutas públicas
-                .requestMatchers("/api/auth/**", "/api/public/**", "/api/check-database").permitAll()
+                .requestMatchers("/api/auth/**", "/api/public/**", "/api/check-database", "/api/tours").permitAll()
 
                 // Rutas protegidas que requieren autenticación
                 .requestMatchers("/api/roles/**", "/api/users/**", "/api/admin/**").hasRole("ADMIN")
@@ -61,15 +61,17 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedHeaders("*");
+                        .allowedOrigins("https://bookmytour-front-end.vercel.app/")  // Cambia este puerto al del frontend
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
