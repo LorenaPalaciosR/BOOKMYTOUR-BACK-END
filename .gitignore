@@ -34,3 +34,5 @@ build/
 
 # Ignorar el archivo application.properties para evitar exponer las credenciales
 src/main/resources/application.properties
+# Ignorar archivo de configuración de correo
+src/main/resources/mail.properties
