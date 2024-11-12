@@ -1,4 +1,6 @@
 package com.bookmytour.entity;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.List;
 @Entity
 
 @Table(name="cities")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "cityId")
 
 public class City {
 

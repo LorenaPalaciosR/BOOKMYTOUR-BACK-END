@@ -1,4 +1,6 @@
 package com.bookmytour.entity;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,6 +10,8 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name="tour_cities")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+
 public class TourCities {
 
     @EmbeddedId

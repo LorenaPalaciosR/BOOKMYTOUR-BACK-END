@@ -14,6 +14,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter  {
@@ -22,15 +23,24 @@ public class JwtRequestFilter extends OncePerRequestFilter  {
     private JwtUtil jwtUtil;
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+    private static final List<String> PUBLIC_PATHS = List.of(
+            "/api/auth", "/api/public", "/api/check-database", "/api/tours"
+    );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        System.out.println("JwtRequestFilter está siendo aplicado para: " + request.getRequestURI());
+        String requestPath = request.getRequestURI();
+        System.out.println("JwtRequestFilter está siendo aplicado para: " + requestPath);
+
+        // Omitir el filtro en las rutas públicas
+        if (isPublicPath(requestPath)) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         final String authorizationHeader = request.getHeader("Authorization");
-
         String username = null;
         String jwt = null;
 
@@ -65,4 +75,8 @@ public class JwtRequestFilter extends OncePerRequestFilter  {
         chain.doFilter(request, response);
     }
 
+    // Método para verificar si la ruta es pública
+    private boolean isPublicPath(String path) {
+        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+    }
 }

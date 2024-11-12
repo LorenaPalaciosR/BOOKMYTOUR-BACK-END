@@ -34,22 +34,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeHttpRequests()
-
                 // Permitir acceso sin autenticación a rutas públicas
                 .requestMatchers("/api/auth/**", "/api/public/**", "/api/check-database", "/api/tours").permitAll()
-
-                // Rutas protegidas que requieren autenticación
+                // Rutas protegidas que requieren autenticación y roles
                 .requestMatchers("/api/roles/**", "/api/users/**", "/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
-
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        // Añadir el filtro JWT si estás usando autenticación JWT
-        http.addFilterBefore(new JwtRequestFilter(), UsernamePasswordAuthenticationFilter.class);
+        // Añadir el filtro JWT para autenticación en las rutas protegidas
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

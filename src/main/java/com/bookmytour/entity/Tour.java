@@ -1,4 +1,7 @@
 package com.bookmytour.entity;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
@@ -9,6 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name="tours")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "tourId")
+
 public class Tour {
 
     @Id

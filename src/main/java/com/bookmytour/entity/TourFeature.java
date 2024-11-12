@@ -1,4 +1,6 @@
 package com.bookmytour.entity;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 @Getter
@@ -7,6 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name="tour_features")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "featureId")
+
 public class TourFeature {
 
     @Id
