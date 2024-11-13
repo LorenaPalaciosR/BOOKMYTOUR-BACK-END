@@ -4,11 +4,12 @@ import java.util.List;
 
 public interface IRolService {
 
+    Rol getRolById(int id);  // Definir el método aquí
 
     Rol getOrCreateRol(String rolName);
     List<Rol> getAllRoles();
 
-    Rol getRolById (int id);
+
 
     Rol saveRol (Rol rol);
 

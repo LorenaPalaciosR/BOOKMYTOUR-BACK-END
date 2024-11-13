@@ -13,27 +13,30 @@ public class RolService implements IRolService {
     @Autowired
     private IRolRepository rolRepository;
 
+    @Override
     public Rol getOrCreateRol(String rolName) {
         return rolRepository.findByRolName(rolName)
                 .orElseGet(() -> rolRepository.save(new Rol(rolName)));
     }
+
     @Override
-    public List<Rol> getAllRoles(){
+    public Rol getRolById(int id) {
+        return rolRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Rol no encontrado"));
+    }
+
+
+    @Override
+    public List<Rol> getAllRoles() {
         return rolRepository.findAll();
     }
 
     @Override
-    public Rol getRolById(int id) {
-        return null;
-    }
-
-    @Override
-    public Rol saveRol(Rol rol){
+    public Rol saveRol(Rol rol) {
         return rolRepository.save(rol);
     }
 
     @Override
-    public void deleteRol(int id){
+    public void deleteRol(int id) {
         rolRepository.deleteById(id);
     }
 }

@@ -25,34 +25,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .cors()  // Vuelve a habilitar CORS aquí
-                .and()
-                .authorizeHttpRequests()
-                .anyRequest().permitAll()  // Permitir acceso sin autenticación a todas las rutas (solo para pruebas)
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .requestMatchers("/api/auth/**").permitAll()  // Permitir acceso sin autenticación a /auth
+                        .requestMatchers("/api/categories/**").permitAll()  // Permitir acceso sin autenticación a /categories
+                        .requestMatchers("/api/cities/**").permitAll()  // Permitir acceso sin autenticación a /cities
+                        .requestMatchers("/api/tours/**").permitAll()           // Permitir acceso sin autenticación a /tours
+                        .requestMatchers("/api/tour-features/**").permitAll()      // Permitir acceso sin autenticación a /tour-features
+                        .requestMatchers("/api/tour-images/**").permitAll()    // Permitir acceso sin autenticación a /tour-images
+                        .requestMatchers("/api/tour-features/{id}").permitAll()  // Acceso específico al endpoint por ID //Comienza en /11 (el id)
+                        .requestMatchers("/api/tour-cities/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")  // Rutas de administración solo para ADMIN
+                        .requestMatchers("/api/roles/**").hasRole("ADMIN")
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN") // Requiere autenticación para
+                        .requestMatchers("/api/bookings/**").authenticated()  // Requiere autenticación para /bookings
+                        .requestMatchers("/error", "/favicon.ico", "/robots.txt").permitAll()  // Ignorar rutas adicionales
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // Añadir el filtro JWT para autenticación en las rutas protegidas
+        // Agregar el filtro JWT para autenticación en las rutas protegidas
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
-
-    @Bean
-    public CorsFilter corsFilter() {
-        // Configuración global de CORS que permite cualquier origen, encabezado y método
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");  // Permitir todos los métodos
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

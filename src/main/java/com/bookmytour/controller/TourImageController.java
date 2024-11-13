@@ -6,14 +6,12 @@ import com.bookmytour.service.ITourImageService;
 import com.bookmytour.service.ITourService;
 import com.bookmytour.service.impl.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tour-images")
@@ -40,46 +38,42 @@ public class TourImageController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{tourId}/upload")
-    public TourImage uploadTourImage(@PathVariable int tourId, @RequestParam("file") MultipartFile file) throws IOException {
-        Tour tour = tourService.getTourById(tourId);
-
-        if (tour == null) {
-            throw new RuntimeException("Tour no encontrado");
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTourImage(@PathVariable int id, @RequestBody Map<String, Object> updates) {
+        TourImage existingImage = tourImageService.getTourImageById(id);
+        if (existingImage == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
         }
 
-        String fileName = file.getOriginalFilename();
-        Path tempPath = null;
-        try {
-            // Crear archivo temporal y transferir el contenido del archivo
-            tempPath = Files.createTempFile("temp", fileName);
-            file.transferTo(tempPath.toFile());
-
-            // Subir el archivo al bucket de S3 y obtener la URL
-            String imageUrl = s3Service.uploadFile(fileName, tempPath);
-
-            // Crear objeto TourImage y guardar la URL
-            TourImage tourImage = new TourImage();
-            tourImage.setTour(tour);
-            tourImage.setImageUrl(imageUrl);
-
-            return tourImageService.saveTourImage(tourImage);
-
-        } finally {
-            // Asegurar que el archivo temporal sea eliminado, incluso en caso de error
-            if (tempPath != null) {
-                Files.deleteIfExists(tempPath);
+        // Actualizar solo los campos que están en el `Map`
+        if (updates.containsKey("tourId")) {
+            int tourId = (int) updates.get("tourId");
+            Tour tour = tourService.getTourById(tourId);
+            if (tour == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tour no válido");
             }
+            existingImage.setTour(tour);
         }
+        if (updates.containsKey("imageUrl")) {
+            String imageUrl = (String) updates.get("imageUrl");
+            existingImage.setImageUrl(imageUrl);
+        }
+
+        // Guardar los cambios
+        tourImageService.saveTourImage(existingImage);
+
+        return ResponseEntity.ok("Imagen actualizada con éxito");
     }
 
+// No se utilizará este método. Se usará el de arriba con MAP.
+/*
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public TourImage updateTourImage(@PathVariable int id, @RequestBody TourImage tourImage) {
         tourImage.setImageId(id);
         return tourImageService.saveTourImage(tourImage);
     }
-
+*/
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteTourImage(@PathVariable int id) {

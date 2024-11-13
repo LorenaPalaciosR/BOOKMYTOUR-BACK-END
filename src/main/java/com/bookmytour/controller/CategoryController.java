@@ -1,9 +1,12 @@
 package com.bookmytour.controller;
 
+import com.bookmytour.dto.CategoryDTO;
 import com.bookmytour.entity.Category;
 import com.bookmytour.service.ICategoryService;
 import com.bookmytour.service.impl.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -23,61 +27,102 @@ public class CategoryController {
     private ICategoryService categoryService;
 
     @Autowired
-    private S3Service s3Service;  // Servicio para manejar la carga de archivos a S3
+    private S3Service s3Service;
 
+    // Método para obtener todas las categorías (abierto al público)
     @GetMapping
-    public List<Category> getAllCategories() {
-        return categoryService.getAllCategories();
+    public List<CategoryDTO> getAllCategories() {
+        return categoryService.getAllCategories().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
+    // Método para obtener una categoría por ID (abierto al público)
     @GetMapping("/{id}")
-    public Category getCategoryById(@PathVariable int id) {
-        return categoryService.getCategoryById(id);
+    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable int id) {
+        Category category = categoryService.getCategoryById(id);
+        if (category == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(convertToDTO(category));
     }
 
+    // Método para crear una categoría (solo para administradores)
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public Category createCategory(@RequestBody Category category) {
-        return categoryService.saveCategory(category);
+    public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryDTO categoryDTO) {
+        Category category = convertToEntity(categoryDTO);
+        Category savedCategory = categoryService.saveCategory(category);
+        return new ResponseEntity<>(convertToDTO(savedCategory), HttpStatus.CREATED);
     }
 
-    // Endpoint para subir una imagen para una categoría específica (solo administradores)
+    // Método para subir una imagen para una categoría específica (solo para administradores)
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{categoryId}/upload-image")
-    public String uploadCategoryImage(@PathVariable int categoryId, @RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<String> uploadCategoryImage(@PathVariable int categoryId, @RequestParam("file") MultipartFile file) throws IOException {
         Category category = categoryService.getCategoryById(categoryId);
-
         if (category == null) {
-            throw new RuntimeException("Categoría no encontrada");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
         }
 
-        // Cargar la imagen a S3 y obtener la URL
         String fileName = file.getOriginalFilename();
         Path tempPath = Files.createTempFile("temp", fileName);
         file.transferTo(tempPath.toFile());
 
         String imageUrl = s3Service.uploadFile(fileName, tempPath);
-        Files.delete(tempPath);  // Eliminar el archivo temporal después de cargar
+        Files.delete(tempPath);
 
-        // Guardar la URL de la imagen en la entidad Category y actualizar en la base de datos
+        // Guardar la URL de la imagen en la entidad Category
         category.setImageUrl(imageUrl);
         categoryService.saveCategory(category);
 
-        return "Imagen subida exitosamente: " + imageUrl;
+        return ResponseEntity.ok("Imagen subida exitosamente: " + imageUrl);
     }
 
-    // Actualizar una categoría (solo administradores)
+    // Método para actualizar una categoría (solo para administradores)
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public Category updateCategory(@PathVariable int id, @RequestBody Category category) {
-        category.setCategoryId(id);
-        return categoryService.saveCategory(category);
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable int id, @RequestBody CategoryDTO categoryDTO) {
+        Category existingCategory = categoryService.getCategoryById(id);
+        if (existingCategory == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        existingCategory.setName(categoryDTO.getName());
+        existingCategory.setDescription(categoryDTO.getDescription());
+        // No actualizamos imageUrl aquí, ya que eso se hace en el endpoint de upload-image
+
+        Category updatedCategory = categoryService.saveCategory(existingCategory);
+        return ResponseEntity.ok(convertToDTO(updatedCategory));
     }
 
-    // Eliminar una categoría (solo administradores)
+    // Método para eliminar una categoría (solo para administradores)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public void deleteCategory(@PathVariable int id) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable int id) {
+        Category category = categoryService.getCategoryById(id);
+        if (category == null) {
+            return ResponseEntity.notFound().build();
+        }
         categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Métodos auxiliares para convertir entre Category y CategoryDTO
+    private CategoryDTO convertToDTO(Category category) {
+        CategoryDTO categoryDTO = new CategoryDTO();
+        categoryDTO.setCategoryId(category.getCategoryId());
+        categoryDTO.setName(category.getName());
+        categoryDTO.setDescription(category.getDescription());
+        categoryDTO.setImageUrl(category.getImageUrl());
+        return categoryDTO;
+    }
+
+    private Category convertToEntity(CategoryDTO categoryDTO) {
+        Category category = new Category();
+        category.setCategoryId(categoryDTO.getCategoryId());
+        category.setName(categoryDTO.getName());
+        category.setDescription(categoryDTO.getDescription());
+        return category;
     }
 }

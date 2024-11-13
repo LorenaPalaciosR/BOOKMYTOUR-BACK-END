@@ -6,7 +6,6 @@ import com.bookmytour.service.IUsuarioService;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
 
 
 import java.util.List;
@@ -67,4 +66,11 @@ public class UsuarioService implements IUsuarioService {
         return usuarioRepository.findByEmail(email).orElse(null);
     }
 
+    @Override
+    public void assignRole(Usuario usuario, String roleName) {
+        // Obtener o crear el rol usando RolService
+        Rol newRole = rolService.getOrCreateRol(roleName);
+        usuario.setRol(newRole);
+        usuarioRepository.save(usuario);  // Guardar el usuario con el nuevo rol
+    }
 }

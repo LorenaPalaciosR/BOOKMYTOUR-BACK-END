@@ -9,4 +9,5 @@ public interface IUsuarioService {
     void deleteUsuario(int id);
     Usuario findByEmail(String email);
 
+    void assignRole(Usuario usuario, String roleName);
 }
