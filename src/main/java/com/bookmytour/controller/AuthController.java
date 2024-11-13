@@ -38,21 +38,25 @@ public class AuthController {
     }
 
     // Endpoint para registrar un nuevo usuario
+    // Endpoint para registrar un nuevo usuario
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        // Verificar si el correo ya existe en la base de datos
+        Usuario existingUsuario = usuarioService.findByEmail(registerRequest.getEmail());
+        if (existingUsuario != null) {
+            // Retornar un error de conflicto si el correo ya está registrado
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+
+        // Crear el nuevo usuario si el correo no existe
         Usuario usuario = new Usuario();
         usuario.setFirstName(registerRequest.getFirstName());
         usuario.setLastName(registerRequest.getLastName());
         usuario.setEmail(registerRequest.getEmail());
         usuario.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
-        // Asignar el rol "USER" al usuario usando su ID (2) o el nombre del rol "USER"
-        Rol userRole = rolService.getRolById(2); // O usa rolService.getOrCreateRol("USER") si el ID no es seguro
-        if (userRole == null) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
+        // Asignar el rol "USER" al usuario
+        Rol userRole = rolService.getOrCreateRol("USER");
         usuario.setRol(userRole);
 
         Usuario savedUsuario = usuarioService.saveUsuario(usuario);

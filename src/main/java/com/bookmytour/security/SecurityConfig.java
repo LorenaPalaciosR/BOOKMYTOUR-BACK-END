@@ -27,6 +27,7 @@ public class SecurityConfig {
         http.csrf().disable()
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/api/auth/**").permitAll()  // Permitir acceso sin autenticación a /auth
+                        .requestMatchers("/api/auth/login").permitAll() // Permitir acceso sin autenticación a /auth
                         .requestMatchers("/api/categories/**").permitAll()  // Permitir acceso sin autenticación a /categories
                         .requestMatchers("/api/cities/**").permitAll()  // Permitir acceso sin autenticación a /cities
                         .requestMatchers("/api/tours/**").permitAll()           // Permitir acceso sin autenticación a /tours

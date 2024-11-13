@@ -19,12 +19,16 @@ public class Usuario {
 
     @Column(length = 100)
     private String firstName;
+
     @Column(length = 100)
     private String lastName;
-    @Column(length = 100)
+
+    @Column(length = 100, unique = true, nullable = false)
     private String email;
-    @Column(length = 100)
+
+    @Column(length = 100, nullable = false)
     private String password;
+
     @Column(length = 100)
     private String imageProfile;
 

@@ -49,6 +49,13 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public Usuario saveUsuario(Usuario usuario) {
+        // Verificar si el correo ya está registrado y pertenece a otro usuario
+        Usuario existingUsuario = findByEmail(usuario.getEmail());
+        if (existingUsuario != null && !existingUsuario.getUserId().equals(usuario.getUserId())) {
+            throw new IllegalArgumentException("El correo ya está registrado con otro usuario.");
+        }
+
+        // Asignar imagen de perfil predeterminada si no se proporciona
         if (usuario.getImageProfile() == null || usuario.getImageProfile().isEmpty()) {
             usuario.setImageProfile(DEFAULT_PROFILE_IMAGE_URL);
         }
