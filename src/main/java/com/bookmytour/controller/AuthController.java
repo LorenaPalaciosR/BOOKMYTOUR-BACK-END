@@ -36,7 +36,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        // Crear y guardar el usuario
         Usuario usuario = new Usuario();
         usuario.setFirstName(registerRequest.getFirstName());
         usuario.setLastName(registerRequest.getLastName());
@@ -44,7 +43,7 @@ public class AuthController {
         usuario.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         Usuario savedUsuario = usuarioService.saveUsuario(usuario);
 
-        // Enviar correo de confirmación
+        // Enviar correo de confirmación (opcional)
         String subject = "Confirmación de registro";
         String text = "Hola " + registerRequest.getFirstName() + ",\n\nGracias por registrarte en nuestro servicio.";
         emailService.sendConfirmationEmail(registerRequest.getEmail(), subject, text);
@@ -63,9 +62,9 @@ public class AuthController {
         if (usuario != null && passwordEncoder.matches(loginRequest.getPassword(), usuario.getPassword())) {
             String token = jwtUtil.generateToken(usuario.getEmail());
             AuthResponse authResponse = new AuthResponse(token, usuario);
-            return ResponseEntity.ok(authResponse);  // Devuelve el token y la información del usuario con código 200 OK
+            return ResponseEntity.ok(authResponse);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);  // Devuelve 401 si las credenciales son inválidas
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
 }

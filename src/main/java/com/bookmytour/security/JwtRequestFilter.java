@@ -16,10 +16,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // Omitir validaciones de token y autenticación, permitiendo acceso directo
-        System.out.println("Acceso directo permitido para la ruta: " + request.getRequestURI());
+        // Imprimir encabezado de autenticación para verificar en los logs
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("Authorization Header: " + authHeader);
 
         // Continuar con la cadena de filtros sin realizar autenticación
         chain.doFilter(request, response);
     }
 }
+

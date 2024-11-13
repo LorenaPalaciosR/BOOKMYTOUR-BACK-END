@@ -25,10 +25,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .cors()  // Habilitar CORS
+                .cors()  // Vuelve a habilitar CORS aquí
                 .and()
                 .authorizeHttpRequests()
-                .anyRequest().permitAll()  // Permitir acceso sin autenticación a todas las rutas
+                .anyRequest().permitAll()  // Permitir acceso sin autenticación a todas las rutas (solo para pruebas)
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
@@ -38,22 +38,21 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     @Bean
     public CorsFilter corsFilter() {
-        // Configuración global de CORS
+        // Configuración global de CORS que permite cualquier origen, encabezado y método
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*"); // Permitir cualquier origen
-        config.addAllowedHeader("*"); // Permitir cualquier encabezado
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("DELETE");
+        config.addAllowedOriginPattern("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");  // Permitir todos los métodos
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
