@@ -1,5 +1,6 @@
 package com.bookmytour.controller;
 
+import com.bookmytour.dto.AuthResponse;
 import com.bookmytour.dto.RegisterRequest;
 import com.bookmytour.entity.Usuario;
 import com.bookmytour.service.IUsuarioService;
@@ -34,33 +35,37 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Usuario> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        // Mapea los datos de RegisterRequest a la entidad Usuario
+    public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        // Crear y guardar el usuario
         Usuario usuario = new Usuario();
         usuario.setFirstName(registerRequest.getFirstName());
         usuario.setLastName(registerRequest.getLastName());
         usuario.setEmail(registerRequest.getEmail());
         usuario.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        Usuario savedUsuario = usuarioService.saveUsuario(usuario); // Corregido aquí
+        Usuario savedUsuario = usuarioService.saveUsuario(usuario);
 
-        // Guarda el usuario en la base de datos
+        // Enviar correo de confirmación
         String subject = "Confirmación de registro";
-        String text = "Hola " + registerRequest.getFirstName() + ",\n\nGracias por registrarte en nuestro servicio. "
-                + "Por favor, confirma tu correo electrónico haciendo clic en el enlace proporcionado.\n\nSaludos,\nEl equipo de BookMyTour";
+        String text = "Hola " + registerRequest.getFirstName() + ",\n\nGracias por registrarte en nuestro servicio.";
         emailService.sendConfirmationEmail(registerRequest.getEmail(), subject, text);
 
-        return new ResponseEntity<>(savedUsuario, HttpStatus.CREATED);
+        // Generar token para el usuario registrado
+        String token = jwtUtil.generateToken(savedUsuario.getEmail());
+        AuthResponse authResponse = new AuthResponse(token, savedUsuario);
+
+        return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
         Usuario usuario = usuarioService.findByEmail(loginRequest.getEmail());
 
         if (usuario != null && passwordEncoder.matches(loginRequest.getPassword(), usuario.getPassword())) {
             String token = jwtUtil.generateToken(usuario.getEmail());
-            return ResponseEntity.ok(token);  // Devuelve el token con código 200 OK
+            AuthResponse authResponse = new AuthResponse(token, usuario);
+            return ResponseEntity.ok(authResponse);  // Devuelve el token y la información del usuario con código 200 OK
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);  // Devuelve 401 si las credenciales son inválidas
         }
     }
 }
