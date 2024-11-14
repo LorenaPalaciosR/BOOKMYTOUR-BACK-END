@@ -74,10 +74,9 @@ public class UsuarioService implements IUsuarioService {
     }
 
     @Override
-    public void assignRole(Usuario usuario, String roleName) {
-        // Obtener o crear el rol usando RolService
-        Rol newRole = rolService.getOrCreateRol(roleName);
+    public void assignRole(Usuario usuario, int roleId) {
+        Rol newRole = rolService.getRolById(roleId);
         usuario.setRol(newRole);
-        usuarioRepository.save(usuario);  // Guardar el usuario con el nuevo rol
+        usuarioRepository.save(usuario); // Guardar usuario con nuevo rol
     }
 }

@@ -39,7 +39,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/tour-images/**").permitAll()
                         .requestMatchers("/api/tour-cities/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/roles/**").hasRole("ADMIN")
+                        .requestMatchers("/api/usuarios/{id}/role").hasRole("ADMIN")
+                       .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

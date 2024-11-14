@@ -42,15 +42,6 @@ public class RolController {
         return convertToDTO(savedRol);
     }
 
-    // Actualizar un rol (solo para administradores)
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
-    public RolDTO updateRol(@PathVariable int id, @RequestBody RolDTO rolDTO) {
-        Rol existingRol = rolService.getRolById(id);
-        existingRol.setRolName(rolDTO.getRolName());
-        Rol updatedRol = rolService.saveRol(existingRol);
-        return convertToDTO(updatedRol);
-    }
 
     // Eliminar un rol (solo para administradores)
     @PreAuthorize("hasRole('ADMIN')")

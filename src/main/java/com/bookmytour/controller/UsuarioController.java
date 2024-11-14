@@ -1,7 +1,9 @@
 package com.bookmytour.controller;
 
 import com.bookmytour.dto.UsuarioDTO;
+import com.bookmytour.entity.Rol;
 import com.bookmytour.entity.Usuario;
+import com.bookmytour.service.IRolService;
 import com.bookmytour.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -19,9 +22,13 @@ public class UsuarioController {
 
     private final IUsuarioService usuarioService;
 
+    private final IRolService rolService;
+
+
     @Autowired
-    public UsuarioController(IUsuarioService usuarioService) {
+    public UsuarioController(IUsuarioService usuarioService, IRolService rolService) {
         this.usuarioService = usuarioService;
+        this.rolService = rolService;
     }
 
     // Obtener todos los usuarios (solo administrador)
@@ -69,13 +76,23 @@ public class UsuarioController {
 
     // Cambiar el rol de un usuario (solo administrador)
     @PutMapping("/{id}/role")
-    public ResponseEntity<String> assignRole(@PathVariable int id, @RequestParam String roleName) {
+    public ResponseEntity<String> assignRole(@PathVariable int id, @RequestBody Map<String, Integer> requestBody) {
+        Integer roleId = requestBody.get("roleId");
         Usuario usuario = usuarioService.getUsuarioById(id);
-        if (usuario != null) {
-            usuarioService.assignRole(usuario, roleName);
-            return ResponseEntity.ok("Rol actualizado con éxito");
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+
+        // Validar que solo se puedan asignar los roles "ADMIN" (1) o "USER" (2)
+        if (roleId == null || (roleId != 1 && roleId != 2)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Solo se permiten los roles 'ADMIN' (1) o 'USER' (2)");
+        }
+
+        Rol newRole = rolService.getRolById(roleId);
+        usuario.setRol(newRole);
+        usuarioService.saveUsuario(usuario);
+        return ResponseEntity.ok("Rol actualizado con éxito");
     }
 
     // Método de conversión de Usuario a UsuarioDTO para simplificar la respuesta
