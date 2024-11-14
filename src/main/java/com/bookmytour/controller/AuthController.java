@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -38,14 +41,15 @@ public class AuthController {
     }
 
     // Endpoint para registrar un nuevo usuario
-    // Endpoint para registrar un nuevo usuario
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<Object> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         // Verificar si el correo ya existe en la base de datos
         Usuario existingUsuario = usuarioService.findByEmail(registerRequest.getEmail());
         if (existingUsuario != null) {
-            // Retornar un error de conflicto si el correo ya está registrado
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+            // Retornar un error de conflicto con mensaje de correo existente
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "El usuario ya está registrado con este correo.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
 
         // Crear el nuevo usuario si el correo no existe
@@ -73,17 +77,31 @@ public class AuthController {
 
     // Endpoint para iniciar sesión
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Object> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
         Usuario usuario = usuarioService.findByEmail(loginRequest.getEmail());
 
-        if (usuario != null && passwordEncoder.matches(loginRequest.getPassword(), usuario.getPassword())) {
-            // Genera el token usando UserDetails para incluir los roles
-            UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
-            String token = jwtUtil.generateToken(userDetails);
-            AuthResponse authResponse = new AuthResponse(token, usuario);
-            return ResponseEntity.ok(authResponse);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        // Caso donde el email no existe
+        if (usuario == null) {
+            // Crear mensaje específico si el correo no existe
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Email y/o contraseña incorrectos.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
+
+        // Caso donde el email existe pero la contraseña es incorrecta
+        if (!passwordEncoder.matches(loginRequest.getPassword(), usuario.getPassword())) {
+            // Crear mensaje de error específico si la contraseña es incorrecta
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Email y/o contraseña incorrectos.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        }
+
+        // Generar el token JWT usando UserDetails para incluir los roles
+        UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
+        String token = jwtUtil.generateToken(userDetails);
+        AuthResponse authResponse = new AuthResponse(token, usuario);
+
+        return ResponseEntity.ok(authResponse);
     }
+
 }
