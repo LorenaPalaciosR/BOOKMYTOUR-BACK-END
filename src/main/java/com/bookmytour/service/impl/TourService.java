@@ -30,4 +30,9 @@ public class TourService implements ITourService {
     public void deleteTour(int id) {
         tourRepository.deleteById(id);
     }
+
+    @Override
+    public Tour getTourByName(String name) {
+        return tourRepository.findByName(name);
+    }
 }

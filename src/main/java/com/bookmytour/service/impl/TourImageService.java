@@ -22,7 +22,10 @@ public class TourImageService implements ITourImageService {
     public TourImage getTourImageById(int id) {
         return tourImageRepository.findById(id).orElse(null);
     }
-
+    @Override
+    public List<TourImage> getTourImagesByTourId(int tourId) {
+        return tourImageRepository.findByTourId(tourId);
+    }
     @Override
     public TourImage saveTourImage(TourImage tourImage) {
         return tourImageRepository.save(tourImage);

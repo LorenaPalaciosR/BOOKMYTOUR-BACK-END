@@ -69,7 +69,8 @@ public class CategoryController {
         Path tempPath = Files.createTempFile("temp", fileName);
         file.transferTo(tempPath.toFile());
 
-        String imageUrl = s3Service.uploadFile(fileName, tempPath);
+       // String imageUrl = s3Service.uploadFile(fileName, tempPath);
+        String imageUrl =null;
         Files.delete(tempPath);
 
         // Guardar la URL de la imagen en la entidad Category

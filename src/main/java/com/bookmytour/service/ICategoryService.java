@@ -11,5 +11,6 @@ public interface ICategoryService {
 
     Category saveCategory(Category category);
 
+    Category getCategoryByName(String name);
     void deleteCategory(int id);
 }

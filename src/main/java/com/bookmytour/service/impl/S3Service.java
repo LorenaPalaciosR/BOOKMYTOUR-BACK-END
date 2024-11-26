@@ -1,17 +1,24 @@
 package com.bookmytour.service.impl;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.apache.tika.Tika;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class S3Service {
@@ -32,13 +39,52 @@ public class S3Service {
     @PostConstruct
     public void initializeS3Client() {
         // Crear una única instancia de S3Client al inicio del servicio
-        s3Client = S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(accessKey, secretKey)))
-                .build();
+      try {
+          s3Client = S3Client.builder()
+                  .region(Region.of(region))
+                  .credentialsProvider(StaticCredentialsProvider.create(
+                          AwsBasicCredentials.create(accessKey, secretKey)))
+                  .build();
+      } catch  (RuntimeException e){
+          throw new RuntimeException("No se pudo conectar al bucket");
+
+      }
+    }
+    public String uploadFileToS3(MultipartFile file, String bucketName) {
+        try {
+            String key = "tours/" + file.getOriginalFilename().replaceAll(" ", "_");
+
+            // Detectar el tipo MIME usando Apache Tika
+            Tika tika = new Tika();
+            String contentType = tika.detect(file.getInputStream());
+            System.out.println("Tipo MIME detectado: " + contentType);
+
+            // Crear la solicitud con el tipo MIME detectado
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket("arn:aws:s3:us-east-1:767397661704:accesspoint/imagenesbucketsback")
+                    .key(key)
+                    .contentType(contentType)
+                    .build();
+
+            // Subir el archivo a S3
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
+
+            // Retornar la URL pública del archivo
+            return "https://" + "imagesbucketsback.s3.us-east-1.amazonaws.com/" + key;
+        } catch (IOException e) {
+            throw new RuntimeException("Error al subir archivo a S3", e);
+        }
+    }
+    public void deleteFileFromS3(String fileUrl) {
+        String bucketName = "imagesbucketsback";
+        String key = fileUrl.substring(fileUrl.indexOf("tours/")); // Extrae la clave desde la URL
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build());
     }
 
+    /*
     public String uploadFile(String fileName, Path filePath) {
         try {
             // Configurar la solicitud de carga
@@ -63,7 +109,7 @@ public class S3Service {
             throw new RuntimeException("Error al subir el archivo: " + e.getMessage(), e);
         }
     }
-
+ */
     @PreDestroy
     public void closeS3Client() {
         // Liberar recursos si es necesario (opcional)
@@ -71,4 +117,7 @@ public class S3Service {
             s3Client.close();
         }
     }
+
+
+
 }

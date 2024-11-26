@@ -25,6 +25,10 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
+    public Category getCategoryByName(String name) {
+        return categoryRepository.findByName(name);
+    }
+    @Override
     public Category saveCategory(Category category) {
         return categoryRepository.save(category);
     }

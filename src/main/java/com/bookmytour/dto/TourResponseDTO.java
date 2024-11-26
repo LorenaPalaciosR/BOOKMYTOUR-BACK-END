@@ -1,17 +1,19 @@
 package com.bookmytour.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
 @Getter
 @Setter
-public class TourDTO {
+@NoArgsConstructor
+@AllArgsConstructor
+public class TourResponseDTO {
 
     private Integer tourId;
-    private String categoryName;  // Nombre de la categoría en lugar de la relación completa
+    private String categoryName;
     private String name;
     private String description;
     private String summary;
@@ -19,5 +21,5 @@ public class TourDTO {
     private String itinerary;
     private String datesAvailable;
     private Integer costPerPerson;
-    private List<MultipartFile> imagenes;
+    private List<String> imagenes; // Maneja las URLs de las imágenes
 }

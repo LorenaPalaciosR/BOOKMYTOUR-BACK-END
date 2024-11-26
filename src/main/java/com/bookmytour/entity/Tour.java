@@ -33,15 +33,13 @@ public class Tour {
     @Column(length = 255)
     private String summary;
 
-
     @Column(length = 50)
     private String duration;
-
 
     @Column(columnDefinition = "TEXT")
     private String itinerary;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String datesAvailable;
 
     private int costPerPerson;

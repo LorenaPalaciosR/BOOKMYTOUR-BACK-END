@@ -10,4 +10,7 @@ public interface ITourService {
     Tour getTourById(int id);
     Tour saveTour (Tour tour);
     void deleteTour(int id);
+
+    // Nuevo método
+    Tour getTourByName(String name);
 }
