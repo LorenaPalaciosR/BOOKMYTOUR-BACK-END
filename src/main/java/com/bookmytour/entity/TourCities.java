@@ -22,7 +22,7 @@ public class TourCities {
     @JoinColumn(name = "tour_id", nullable = false)
     private Tour tour;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("cityId") // Mapea la clave compuesta "cityId" al campo de la entidad City
     @JoinColumn(name = "city_id", nullable = false)
     private City city;

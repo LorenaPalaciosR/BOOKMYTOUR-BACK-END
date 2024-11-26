@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TourService implements ITourService {
@@ -16,12 +17,13 @@ public class TourService implements ITourService {
     public List<Tour> getAllTours() {
         return tourRepository.findAll();
     }
+
     @Override
     public Tour getTourById(int id) {
         return tourRepository.findById(id).orElse(null);
     }
 
-    @Override
+   @Override
     public Tour saveTour(Tour tour) {
         return tourRepository.save(tour);
     }
@@ -34,5 +36,19 @@ public class TourService implements ITourService {
     @Override
     public Tour getTourByName(String name) {
         return tourRepository.findByName(name);
+    }
+
+    @Override
+    public Tour getTourWithCities(Integer tourId) {
+        Tour tour = tourRepository.findTourWithCitiesById(tourId);
+        if (tour != null) {
+            System.out.println("Tour encontrado: " + tour.getName());
+            System.out.println("Ciudades asociadas: " + tour.getTourCities().stream()
+                    .map(tc -> tc.getCity().getName())
+                    .collect(Collectors.toList()));
+        } else {
+            System.out.println("No se encontró el tour con ID: " + tourId);
+        }
+        return tour;
     }
 }

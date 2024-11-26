@@ -10,4 +10,5 @@ public interface ITourCitiesService {
     TourCities getTourCityById (TourCitiesId id);
     TourCities saveTourCity (TourCities tourCity);
     void deleteTourCity(TourCitiesId id);
+
 }

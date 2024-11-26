@@ -13,7 +13,7 @@ import java.io.Serializable;
 
 public class TourCitiesId implements Serializable {
 
-    private Integer tour;
-    private Integer city;
+    private Integer tourId;
+    private Integer cityId;
 
 }

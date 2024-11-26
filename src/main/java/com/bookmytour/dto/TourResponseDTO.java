@@ -22,4 +22,6 @@ public class TourResponseDTO {
     private String datesAvailable;
     private Integer costPerPerson;
     private List<String> imagenes; // Maneja las URLs de las imágenes
+    private List<String> cityNames;
+
 }

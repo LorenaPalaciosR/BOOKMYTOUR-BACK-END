@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -50,8 +52,8 @@ public class Tour {
     @OneToMany (mappedBy = "tour")
     private List<TourFeature> features;
 
-    @OneToMany(mappedBy = "tour")
-    private List<TourCities> tourCities;
+    @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<TourCities> tourCities = new ArrayList<>();
 
     public Tour(Integer tourId) {
         this.tourId = tourId;

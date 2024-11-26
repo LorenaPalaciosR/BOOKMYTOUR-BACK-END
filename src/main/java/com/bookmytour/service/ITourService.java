@@ -13,4 +13,6 @@ public interface ITourService {
 
     // Nuevo método
     Tour getTourByName(String name);
+
+    Tour getTourWithCities(Integer tourId);
 }

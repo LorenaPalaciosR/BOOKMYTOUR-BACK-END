@@ -20,4 +20,6 @@ public class TourDTO {
     private String datesAvailable;
     private Integer costPerPerson;
     private List<MultipartFile> imagenes;
+    private String cityIds; // Asegúrate de que este campo sea String
+
 }
