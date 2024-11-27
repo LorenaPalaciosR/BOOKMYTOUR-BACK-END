@@ -154,7 +154,15 @@ public class TourController {
 
             // Recargar el tour con relaciones
             Tour reloadedTour = tourService.getTourWithCities(savedTour.getTourId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponseDTO(reloadedTour));
+
+            // Responder con éxito y mensaje
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    Map.of(
+                            "message", "Tour creado con éxito",
+                            "data", convertToResponseDTO(reloadedTour)
+                    )
+            );
+
 
         } catch (NumberFormatException e) {
             // Manejar errores de formato en los IDs de ciudadesc
@@ -177,22 +185,50 @@ public class TourController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message", "El tour no fue encontrado"));
         }
+        Map<String, String> updateMessages = new HashMap<>();
 
         try {
-            // Actualizar detalles del tour
-            if (tourDTO.getName() != null) existingTour.setName(tourDTO.getName());
-            if (tourDTO.getDescription() != null) existingTour.setDescription(tourDTO.getDescription());
-            if (tourDTO.getSummary() != null) existingTour.setSummary(tourDTO.getSummary());
-            if (tourDTO.getDuration() != null) existingTour.setDuration(tourDTO.getDuration());
-            if (tourDTO.getItinerary() != null) existingTour.setItinerary(tourDTO.getItinerary());
-            if (tourDTO.getDatesAvailable() != null) existingTour.setDatesAvailable(tourDTO.getDatesAvailable());
-            if (tourDTO.getCostPerPerson() != null) existingTour.setCostPerPerson(tourDTO.getCostPerPerson());
+            // Actualizar detalles del tour y agregar mensajes específicos
+            if (tourDTO.getName() != null) {
+                existingTour.setName(tourDTO.getName());
+                updateMessages.put("name", "Nombre actualizado correctamente.");
+            }
+            if (tourDTO.getDescription() != null) {
+                existingTour.setDescription(tourDTO.getDescription());
+                updateMessages.put("description", "Descripción actualizada correctamente.");
+            }
+            if (tourDTO.getSummary() != null) {
+                existingTour.setSummary(tourDTO.getSummary());
+                updateMessages.put("summary", "Resumen actualizado correctamente.");
+            }
+            if (tourDTO.getDuration() != null) {
+                existingTour.setDuration(tourDTO.getDuration());
+                updateMessages.put("duration", "Duración actualizada correctamente.");
+            }
+            if (tourDTO.getItinerary() != null) {
+                existingTour.setItinerary(tourDTO.getItinerary());
+                updateMessages.put("itinerary", "Itinerario actualizado correctamente.");
+            }
+            if (tourDTO.getDatesAvailable() != null) {
+                existingTour.setDatesAvailable(tourDTO.getDatesAvailable());
+                updateMessages.put("datesAvailable", "Fechas disponibles actualizadas correctamente.");
+            }
+            if (tourDTO.getCostPerPerson() != null) {
+                existingTour.setCostPerPerson(tourDTO.getCostPerPerson());
+                updateMessages.put("costPerPerson", "Costo por persona actualizado correctamente.");
+            }
             if (tourDTO.getCategoryName() != null) {
                 existingTour.setCategory(categoryService.getCategoryByName(tourDTO.getCategoryName()));
+                updateMessages.put("category", "Categoría actualizada correctamente.");
             }
 
             // Actualizar ciudades asociadas
-            associateCitiesWithTour(existingTour, tourDTO.getCityIds());
+            try {
+                associateCitiesWithTour(existingTour, tourDTO.getCityIds());
+                updateMessages.put("cities", "Ciudades asociadas actualizadas correctamente.");
+            } catch (Exception e) {
+                updateMessages.put("cities", "Error al actualizar las ciudades: " + e.getMessage());
+            }
             /*
             // Manejar ciudades asociadas
             if (tourDTO.getCityIds() != null && !tourDTO.getCityIds().isEmpty()) {
@@ -233,6 +269,7 @@ public class TourController {
                     tourImage.setImageUrl(url);
                     tourImageService.saveTourImage(tourImage);
                 });
+                updateMessages.put("images", "Imágenes actualizadas correctamente.");
             }
 
             // Guardar los cambios en el tour
@@ -240,7 +277,12 @@ public class TourController {
 
             // Recargar el tour con las relaciones actualizadas
             Tour reloadedTour = tourService.getTourWithCities(updatedTour.getTourId());
-            return ResponseEntity.ok(convertToResponseDTO(reloadedTour));
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Tour actualizado con éxito",
+                    "details", updateMessages,
+                    "data", convertToResponseDTO(reloadedTour)
+            ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
