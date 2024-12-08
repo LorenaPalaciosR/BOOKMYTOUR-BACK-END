@@ -20,6 +20,6 @@ public class TourDTO {
     private String datesAvailable;
     private Integer costPerPerson;
     private List<MultipartFile> imagenes;
-    private String cityIds; // Asegúrate de que este campo sea String
+    private String cityNames; // Cambia el campo a un String de nombres separados por comas
 
 }

@@ -6,6 +6,7 @@ import com.bookmytour.service.IBookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 @Service
 public class BookingService implements IBookingService {
@@ -30,5 +31,15 @@ public class BookingService implements IBookingService {
     @Override
     public void deleteBooking(int id) {
         bookingRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Booking> getBookingsByUserId(Integer userId) {
+        return bookingRepository.findByUser_UserId(userId);
+    }
+
+    @Override
+    public boolean isTourOccupied(Integer tourId, Date bookingDate, Date endDate) {
+        return bookingRepository.isTourOccupied(tourId, bookingDate, endDate);
     }
 }

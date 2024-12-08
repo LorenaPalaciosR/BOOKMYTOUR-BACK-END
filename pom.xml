@@ -124,6 +124,7 @@
 				<directory>src/main/resources</directory>
 				<includes>
 					<include>**/*.properties</include>
+					<include>**/*.p12</include>
 				</includes>
 				<filtering>false</filtering> <!-- Desactiva el filtrado para archivos .properties -->
 			</resource>

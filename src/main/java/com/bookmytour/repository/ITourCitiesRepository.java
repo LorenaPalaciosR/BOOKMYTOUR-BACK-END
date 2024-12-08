@@ -1,5 +1,6 @@
 package com.bookmytour.repository;
 
+import com.bookmytour.entity.City;
 import com.bookmytour.entity.TourCities;
 import com.bookmytour.entity.TourCitiesId;
 import org.springframework.data.jpa.repository.JpaRepository;

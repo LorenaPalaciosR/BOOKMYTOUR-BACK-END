@@ -1,5 +1,6 @@
 package com.bookmytour.service;
 
+import com.bookmytour.entity.City;
 import com.bookmytour.entity.TourCities;
 import com.bookmytour.entity.TourCitiesId;
 
@@ -11,4 +12,5 @@ public interface ITourCitiesService {
     TourCities saveTourCity (TourCities tourCity);
     void deleteTourCity(TourCitiesId id);
 
+    City getCityByName(String cityName);
 }

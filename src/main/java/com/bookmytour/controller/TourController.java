@@ -14,10 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -39,6 +36,8 @@ public class TourController {
 
     @Autowired
     private ITourCitiesService tourCitiesService;
+
+
 
    // Obtener todos los tours (abierto para cualquier usuario)
    @GetMapping
@@ -118,7 +117,7 @@ public class TourController {
             Tour savedTour = tourService.saveTour(tour);
 
             // Manejar ciudades asociadas
-            associateCitiesWithTour(savedTour, tourDTO.getCityIds());
+            associateCitiesWithTour(savedTour, tourDTO.getCityNames());
             /*
             // Asociar ciudades al tour usando cityIds
             if (tourDTO.getCityIds() != null && !tourDTO.getCityIds().isEmpty()) {
@@ -163,11 +162,6 @@ public class TourController {
                     )
             );
 
-
-        } catch (NumberFormatException e) {
-            // Manejar errores de formato en los IDs de ciudadesc
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "Los cityIds deben ser una lista de números separados por comas"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -224,34 +218,12 @@ public class TourController {
 
             // Actualizar ciudades asociadas
             try {
-                associateCitiesWithTour(existingTour, tourDTO.getCityIds());
+                associateCitiesWithTour(existingTour, tourDTO.getCityNames());
                 updateMessages.put("cities", "Ciudades asociadas actualizadas correctamente.");
             } catch (Exception e) {
                 updateMessages.put("cities", "Error al actualizar las ciudades: " + e.getMessage());
             }
-            /*
-            // Manejar ciudades asociadas
-            if (tourDTO.getCityIds() != null && !tourDTO.getCityIds().isEmpty()) {
-                List<Integer> cityIds = Arrays.stream(tourDTO.getCityIds().split(","))
-                        .map(String::trim)
-                        .map(Integer::parseInt)
-                        .collect(Collectors.toList());
 
-                // Eliminar relaciones antiguas
-                List<TourCities> existingTourCities = existingTour.getTourCities();
-                existingTourCities.forEach(tourCity -> tourCitiesService.deleteTourCity(tourCity.getId()));
-
-                // Crear nuevas relaciones
-                List<TourCities> newTourCities = cityIds.stream()
-                        .map(cityId -> new TourCities(
-                                new TourCitiesId(existingTour.getTourId(), cityId),
-                                existingTour,
-                                new City(cityId)))
-                        .collect(Collectors.toList());
-                existingTour.setTourCities(newTourCities);
-                newTourCities.forEach(tourCitiesService::saveTourCity);
-            }
-            */
             // Manejar imágenes
             if (tourDTO.getImagenes() != null && !tourDTO.getImagenes().isEmpty()) {
                 List<TourImage> oldImages = tourImageService.getTourImagesByTourId(id);
@@ -332,27 +304,38 @@ public class TourController {
     }
 
     // Manejo de asociación de ciudades
-    private void associateCitiesWithTour(Tour tour, String cityIdsString) {
-        if (cityIdsString != null && !cityIdsString.isEmpty()) {
-            List<Integer> cityIds = Arrays.stream(cityIdsString.split(","))
+    private void associateCitiesWithTour(Tour tour, String cityNamesString) {
+        if (cityNamesString != null && !cityNamesString.isEmpty()) {
+            // Dividir los nombres de las ciudades y limpiar espacios
+            List<String> cityNames = Arrays.stream(cityNamesString.split(","))
                     .map(String::trim)
-                    .map(Integer::parseInt)
                     .collect(Collectors.toList());
 
-            // Eliminar asociaciones anteriores
-            tour.getTourCities().forEach(tc -> tourCitiesService.deleteTourCity(tc.getId()));
+            // Buscar las ciudades en la base de datos
+            List<City> cities = cityNames.stream()
+                    .map(cityName -> tourCitiesService.getCityByName(cityName)) // Buscar ciudad por nombre
+                    .filter(city -> city != null) // Filtrar nombres inválidos
+                    .collect(Collectors.toList());
 
-            // Crear nuevas asociaciones
-            List<TourCities> newTourCities = cityIds.stream()
-                    .map(cityId -> new TourCities(
-                            new TourCitiesId(tour.getTourId(), cityId),
+            // Eliminar relaciones anteriores
+            if (tour.getTourCities() != null && !tour.getTourCities().isEmpty()) {
+                // Elimina las relaciones tanto de la base de datos como de la lista de la entidad Tour
+                List<TourCities> tourCitiesToRemove = new ArrayList<>(tour.getTourCities());
+                tourCitiesToRemove.forEach(tc -> tourCitiesService.deleteTourCity(tc.getId()));
+                tour.getTourCities().clear();
+            }
+
+            // Crear nuevas relaciones y asignarlas al Tour
+            List<TourCities> newTourCities = cities.stream()
+                    .map(city -> new TourCities(
+                            new TourCitiesId(tour.getTourId(), city.getCityId()),
                             tour,
-                            new City(cityId)))
+                            city))
                     .collect(Collectors.toList());
 
-            newTourCities.forEach(tourCitiesService::saveTourCity);
+            // Agregar nuevas relaciones al tour
+            tour.getTourCities().addAll(newTourCities);
         }
     }
-
 }
 

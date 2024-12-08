@@ -10,6 +10,8 @@ public interface ICityService {
 
     City getCityById(int id);
 
+    City getCityByName(String cityName);
+
     City saveCity(City city);
 
     void deleteCity(int id);

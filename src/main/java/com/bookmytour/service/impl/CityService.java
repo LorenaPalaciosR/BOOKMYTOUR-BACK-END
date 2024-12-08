@@ -32,4 +32,10 @@ public class CityService implements ICityService {
     public void deleteCity(int id) {
         cityRepository.deleteById(id);
     }
+
+    @Override
+    public City getCityByName(String cityName) {
+        return cityRepository.findByName(cityName);
+    }
+
 }

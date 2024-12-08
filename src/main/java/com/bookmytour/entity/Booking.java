@@ -13,28 +13,36 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 
-@Table(name="booking")
+@Table(name = "booking", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"tour_id", "booking_date", "end_date"})
+})
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "bookingId")
-
 public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer bookingId;
 
-    @ManyToOne
-    @JoinColumn(name="user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER) // Carga inmediata del usuario
+    @JoinColumn(name = "user_id", nullable = false)
     private Usuario user;
 
-    @ManyToOne
-    @JoinColumn(name="tour_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER) // Carga inmediata del tour
+    @JoinColumn(name = "tour_id", nullable = false)
     private Tour tour;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "booking_date", nullable = false)
+    @Temporal(TemporalType.DATE)
     private Date bookingDate;
 
-    @Column(length = 20)
+    @Column(name = "end_date", nullable = false)
+    @Temporal(TemporalType.DATE)
+    private Date endDate;
+
+    @Column(length = 20, nullable = false)
     private String status;
 
+    @Column(name = "payment_method")
+    private String paymentMethod;
 
 }
