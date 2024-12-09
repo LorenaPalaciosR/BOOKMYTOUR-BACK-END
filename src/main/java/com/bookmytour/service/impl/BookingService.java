@@ -42,4 +42,9 @@ public class BookingService implements IBookingService {
     public boolean isTourOccupied(Integer tourId, Date bookingDate, Date endDate) {
         return bookingRepository.isTourOccupied(tourId, bookingDate, endDate);
     }
+
+    @Override
+    public List<Booking> getBookingsByTourId(Integer tourId) {
+        return bookingRepository.findByTour_TourId(tourId);
+    }
 }

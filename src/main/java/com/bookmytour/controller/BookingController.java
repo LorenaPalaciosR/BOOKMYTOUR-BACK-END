@@ -69,16 +69,9 @@ public class BookingController {
         }
 
         // Transformar las reservas en una respuesta simplificada
-        List<Map<String, Object>> response = bookings.stream().map(booking -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("bookingId", booking.getBookingId());
-            map.put("tour", Map.of("tourId", booking.getTour().getTourId(), "name", booking.getTour().getName()));
-            map.put("bookingDate", booking.getBookingDate());
-            map.put("endDate", booking.getEndDate());
-            map.put("status", booking.getStatus());
-            map.put("paymentMethod", booking.getPaymentMethod());
-            return map;
-        }).collect(Collectors.toList());
+        List<BookingResponseDTO> response = bookings.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
     }
@@ -117,16 +110,7 @@ public class BookingController {
             Booking savedBooking = bookingService.saveBooking(booking);
 
             // Respuesta exitosa
-            Map<String, Object> response = new HashMap<>();
-            response.put("bookingId", savedBooking.getBookingId());
-            response.put("user", Map.of("userId", user.getUserId(), "email", user.getEmail()));
-            response.put("tour", Map.of("tourId", tour.getTourId(), "name", tour.getName()));
-            response.put("bookingDate", savedBooking.getBookingDate());
-            response.put("endDate", savedBooking.getEndDate());
-            response.put("status", savedBooking.getStatus());
-            response.put("paymentMethod", savedBooking.getPaymentMethod());
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(convertToDTO(savedBooking));
 
         } catch (DataIntegrityViolationException ex) {
             // Manejar violaciones de restricciones únicas
@@ -181,7 +165,7 @@ public class BookingController {
 
         Booking updatedBooking = bookingService.saveBooking(existingBooking);
 
-        return ResponseEntity.ok(updatedBooking);
+        return ResponseEntity.ok(convertToDTO(updatedBooking));
     }
 
 

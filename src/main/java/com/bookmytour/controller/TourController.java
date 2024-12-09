@@ -3,10 +3,7 @@ package com.bookmytour.controller;
 import com.bookmytour.dto.TourDTO;
 import com.bookmytour.dto.TourResponseDTO;
 import com.bookmytour.entity.*;
-import com.bookmytour.service.ICategoryService;
-import com.bookmytour.service.ITourCitiesService;
-import com.bookmytour.service.ITourImageService;
-import com.bookmytour.service.ITourService;
+import com.bookmytour.service.*;
 import com.bookmytour.service.impl.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +34,8 @@ public class TourController {
     @Autowired
     private ITourCitiesService tourCitiesService;
 
+    @Autowired
+    private IBookingService bookingService;
 
 
    // Obtener todos los tours (abierto para cualquier usuario)
@@ -72,6 +71,11 @@ public class TourController {
                 .collect(Collectors.toList())
                 : List.of();
 
+        List<String> fechasOcupadas = bookingService.getBookingsByTourId(tour.getTourId())
+                .stream()
+                .map(booking -> booking.getBookingDate() + " - " + booking.getEndDate())
+                .collect(Collectors.toList());
+
         // Crear y devolver el DTO
         return new TourResponseDTO(
                 tour.getTourId(),
@@ -84,7 +88,8 @@ public class TourController {
                 tour.getDatesAvailable(),
                 tour.getCostPerPerson(),
                 imageUrls,
-                cityNames // Añadir los nombres de las ciudades al DTO
+                cityNames,
+                fechasOcupadas// Añadir los nombres de las ciudades al DTO
         );
     }
     // Crear un nuevo tour (solo administrador)

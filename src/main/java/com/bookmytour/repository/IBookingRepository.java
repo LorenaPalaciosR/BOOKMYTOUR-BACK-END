@@ -18,6 +18,8 @@ public interface IBookingRepository extends JpaRepository<Booking, Integer> {
                            @Param("endDate") Date endDate);
 
     List<Booking> findByUser_UserId(Integer userId);
+    List<Booking> findByTour_TourId(Integer tourId);
+
 
 
 }

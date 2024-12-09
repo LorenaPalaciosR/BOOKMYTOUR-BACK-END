@@ -15,4 +15,7 @@ public interface IBookingService {
     List<Booking> getBookingsByUserId(Integer userId);
 
     boolean isTourOccupied(Integer tourId, Date bookingDate, Date endDate);
+
+    List<Booking> getBookingsByTourId(Integer tourId);
+
 }
